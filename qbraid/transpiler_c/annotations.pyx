@@ -33,7 +33,7 @@ def requires_extras(str dependency):
         if PyObject_HasAttrString(func, "requires_extras"):
             PyList_Append(func.requires_extras, dependency)
         else:
-            func.requires_extras = PyList_New(1)
+            func.requires_extras = PyList_New(0)
             PyList_Append(func.requires_extras, dependency)
         return func
 

@@ -22,13 +22,22 @@ if TYPE_CHECKING:
     import qbraid
 
 
-class Conversion:
+cdef class Conversion:
     """
     Class for defining and handling custom conversions between different quantum program packages.
     """
 
+    cdef public str _source
+    cdef public str _target
+    cdef public object _conversion_func
+    cdef public list _extras
+    cdef public bint _native
+    cdef public bint _supported
+    cdef public float _weight
+
+
     def __init__(
-        self, source: str, target: str, conversion_func: Callable, weight: Optional[float] = None
+        self, str source, str target, object conversion_func, object weight=None
     ):
         """
         Initialize a Conversion instance with source and target packages and a conversion function.
@@ -47,7 +56,7 @@ class Conversion:
         self._native = self._is_module_native(conversion_func)
         self._supported = self._is_conversion_supported()
 
-        default_weight = getattr(conversion_func, "weight", 1)
+        cdef float default_weight = getattr(conversion_func, "weight", 1)
         self._weight = weight if weight is not None else default_weight
         if not 0 <= self._weight <= 1:
             raise ValueError("Weight must be a float between 0 and 1, inclusive.")
@@ -103,7 +112,7 @@ class Conversion:
         """
         return self._weight
 
-    def _is_module_native(self, func: Callable) -> bool:
+    cdef bint _is_module_native(self, object func):
         """
         Determine if the function's module is 'qbraid' and requires no extras.
 
@@ -111,7 +120,7 @@ class Conversion:
             func (Callable): The function to check the module of.
 
         Returns:
-            bool: True if the module is 'qbraid' and requires no extras, False otherwise.
+            bint: True if the module is 'qbraid' and requires no extras, False otherwise.
         """
         module = inspect.getmodule(func)
         is_native = (
@@ -122,12 +131,12 @@ class Conversion:
         )
         return is_native
 
-    def _is_conversion_supported(self) -> bool:
+    cdef bint _is_conversion_supported(self):
         """
         Determine if the required packages for the conversion are installed.
 
         Returns:
-            bool: True if supported, otherwise False.
+            bint: True if supported, otherwise False.
         """
         if self._native:
             return True
@@ -138,9 +147,7 @@ class Conversion:
                 return False
         return True
 
-    def convert(
-        self, program: "qbraid.programs.QPROGRAM"
-    ) -> Union["qbraid.programs.QPROGRAM", Any]:
+    cpdef object convert(self, object program):
         """
         Convert a quantum program from the source package to the target package.
 
@@ -172,7 +179,7 @@ class Conversion:
         """
         return f"('{self._source}', '{self._target}')"
 
-    def __eq__(self, other: Any) -> bool:
+    def __eq__(self, other: Any) -> bint:
         """
         Check if another instance is equal to this instance.
 
