@@ -14,17 +14,22 @@ Module defining exceptions for errors raised during conversions
 """
 from typing import Optional
 
-from qbraid.exceptions import QbraidError
+
+class QbraidError(Exception):
+    """Base class for errors raised by qBraid."""
+    pass
 
 
 class CircuitConversionError(QbraidError):
     """Base class for errors raised while converting a circuit."""
+    pass
 
 
-class NodeNotFoundError(ValueError, QbraidError):
+class NodeNotFoundError(QbraidError):
     """Class for errors raised when a node is not present in a ConversionGraph."""
 
-    def __init__(self, graph_type: str, package: str, nodes: list[str]):
+    def __init__(self, str graph_type, str package, list nodes):
+        cdef str message
         message = (
             f"{graph_type} conversion graph does not contain node '{package}'. "
             f"Supported nodes are: {nodes}"
@@ -35,7 +40,7 @@ class NodeNotFoundError(ValueError, QbraidError):
 class ConversionPathNotFoundError(QbraidError):
     """Class for errors raised when there is no path between two nodes in a ConversionGraph."""
 
-    def __init__(self, source: str, target: str, max_depth: Optional[int] = None):
-        max_depth_msg = f" with depth <= {max_depth}" if max_depth is not None else ""
+    def __init__(self, str source, str target, object max_depth=None):
+        cdef str max_depth_msg = f" with depth <= {max_depth}" if max_depth is not None else ""
         message = f"No conversion path found from '{source}' to '{target}'{max_depth_msg}"
         super().__init__(message)
